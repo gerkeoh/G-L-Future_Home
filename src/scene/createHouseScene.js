@@ -16,7 +16,7 @@ export function createHouseScene(canvas, markerContainer, onRoomSelect) {
     antialias: true,
     alpha: false,
   });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.shadowMap.autoUpdate = false;
@@ -1701,6 +1701,8 @@ export function createHouseScene(canvas, markerContainer, onRoomSelect) {
     }
   }
 
+  const frameInterval = 1000 / 40;
+  let lastFrameAt = 0;
   let frameId = null;
   let renderingFrame = false;
   function requestFrame() {
@@ -1720,11 +1722,14 @@ export function createHouseScene(canvas, markerContainer, onRoomSelect) {
       cameraChanged = true;
     }
     const controlsChanged = controls.update();
-    if (cameraChanged || markerUpdateNeeded) {
-      positionMarkers();
-      markerUpdateNeeded = false;
+    if (now - lastFrameAt >= frameInterval || lastFrameAt === 0) {
+      if (cameraChanged || markerUpdateNeeded) {
+        positionMarkers();
+        markerUpdateNeeded = false;
+      }
+      renderer.render(scene, camera);
+      lastFrameAt = now;
     }
-    renderer.render(scene, camera);
     renderingFrame = false;
     if (transition || controlsChanged) requestFrame();
   }
